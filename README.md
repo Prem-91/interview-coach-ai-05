@@ -1,37 +1,6 @@
-https://interview-ai-ripis.lovable.app
 
-## Project info
-
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Interview Coach AI | Vite, TypeScript, React, shadcn-ui, Tailwind CSS) 2025
+• This is an ethical AI-powered mock interview practice assistant.
+• Accepts interview-style questions (typed, pasted, or simulated screen capture)
+• Identifies technical topic and intent (DSA, OS, DBMS, OOP, System Design)
+• Delivers progressive hints instead of full solutions
