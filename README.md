@@ -1,3 +1,4 @@
+https://interview-ai-ripis.lovable.app
 
 Interview Coach AI | Vite, TypeScript, React, shadcn-ui, Tailwind CSS) 2025
 • This is an ethical AI-powered mock interview practice assistant.
