@@ -1,8 +1,12 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { SessionEntry, QuestionAnalysis, HintLevel } from "@/lib/mock-reasoning";
+
+const STORAGE_KEY = "ripis-session-v1";
 
 export interface SessionSummary {
   totalQuestions: number;
+  totalAnswers: number;
+  averageScore: number;
   topicsPracticed: string[];
   hintLevelsUsed: Record<string, number>;
   conceptualGaps: string[];
@@ -11,8 +15,44 @@ export interface SessionSummary {
 }
 
 export function useSession() {
-  const [entries, setEntries] = useState<SessionEntry[]>([]);
-  const [sessionStart] = useState<Date>(new Date());
+  const [entries, setEntries] = useState<SessionEntry[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        return parsed.entries.map((e: any) => ({
+          ...e,
+          timestamp: new Date(e.timestamp),
+        }));
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  });
+
+  const [sessionStart] = useState<Date>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        return new Date(parsed.sessionStart);
+      } catch (e) {
+        return new Date();
+      }
+    }
+    return new Date();
+  });
+
+  useEffect(() => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        entries,
+        sessionStart: sessionStart.toISOString(),
+      })
+    );
+  }, [entries, sessionStart]);
 
   const addEntry = useCallback(
     (question: string, analysis: QuestionAnalysis) => {
@@ -20,6 +60,19 @@ export function useSession() {
         ...prev,
         { question, analysis, hintsUsed: [], timestamp: new Date() },
       ]);
+    },
+    []
+  );
+
+  const recordEvaluation = useCallback(
+    (questionIndex: number, userAnswer: string, evaluation: any) => {
+      setEntries((prev) =>
+        prev.map((entry, i) =>
+          i === questionIndex
+            ? { ...entry, userAnswer, evaluation }
+            : entry
+        )
+      );
     },
     []
   );
@@ -60,12 +113,19 @@ export function useSession() {
       suggestedRevision.push("Practice clearer problem statement formulation");
     }
 
+    const evaluatedEntries = entries.filter((e) => e.evaluation);
+    const averageScore = evaluatedEntries.length > 0
+      ? Math.round(evaluatedEntries.reduce((acc, e) => acc + (e.evaluation?.score || 0), 0) / evaluatedEntries.length)
+      : 0;
+
     const duration = Math.round(
       (new Date().getTime() - sessionStart.getTime()) / 60000
     );
 
     return {
       totalQuestions: entries.length,
+      totalAnswers: evaluatedEntries.length,
+      averageScore,
       topicsPracticed: [...topicSet],
       hintLevelsUsed: hintCounts,
       conceptualGaps,
@@ -82,6 +142,7 @@ export function useSession() {
     entries,
     addEntry,
     recordHintUsed,
+    recordEvaluation,
     getSummary,
     resetSession,
     currentIndex: entries.length - 1,

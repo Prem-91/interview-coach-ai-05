@@ -16,6 +16,7 @@ import {
   AlertCircle,
   Target,
   TrendingUp,
+  Award,
 } from "lucide-react";
 
 interface SessionSummaryDialogProps {
@@ -47,27 +48,34 @@ export function SessionSummaryDialog({
 
         <div className="space-y-4">
           {/* Quick Stats */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             <div className="rounded-lg border border-border bg-secondary/30 p-3 text-center">
               <BookOpen className="mx-auto mb-1 h-5 w-5 text-primary" />
               <p className="text-2xl font-bold text-foreground">
                 {summary.totalQuestions}
               </p>
-              <p className="text-xs text-muted-foreground">Questions</p>
+              <p className="text-xs text-muted-foreground">Questions Analyzed</p>
+            </div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-center">
+              <TrendingUp className="mx-auto mb-1 h-5 w-5 text-primary" />
+              <p className="text-2xl font-bold text-foreground">
+                {summary.totalAnswers}
+              </p>
+              <p className="text-xs text-muted-foreground">Answers Evaluated</p>
+            </div>
+            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-center">
+              <Award className="mx-auto mb-1 h-5 w-5 text-accent" />
+              <p className="text-2xl font-bold text-foreground">
+                {summary.averageScore}%
+              </p>
+              <p className="text-xs text-muted-foreground">Average Score</p>
             </div>
             <div className="rounded-lg border border-border bg-secondary/30 p-3 text-center">
               <Clock className="mx-auto mb-1 h-5 w-5 text-primary" />
               <p className="text-2xl font-bold text-foreground">
                 {summary.duration}
               </p>
-              <p className="text-xs text-muted-foreground">Minutes</p>
-            </div>
-            <div className="rounded-lg border border-border bg-secondary/30 p-3 text-center">
-              <Target className="mx-auto mb-1 h-5 w-5 text-primary" />
-              <p className="text-2xl font-bold text-foreground">
-                {summary.topicsPracticed.length}
-              </p>
-              <p className="text-xs text-muted-foreground">Topics</p>
+              <p className="text-xs text-muted-foreground">Minutes Spent</p>
             </div>
           </div>
 
