@@ -3,7 +3,7 @@ import { Header } from "@/components/Header";
 import { QuestionInput } from "@/components/QuestionInput";
 import { AnalysisOutput } from "@/components/AnalysisOutput";
 import { SessionSummaryDialog } from "@/components/SessionSummaryDialog";
-import { analyzeQuestion, delay, QuestionAnalysis, HintLevel } from "@/lib/mock-reasoning";
+import { analyzeQuestion, evaluateAnswer, delay, QuestionAnalysis, HintLevel, AnswerEvaluation } from "@/lib/mock-reasoning";
 import { useSession } from "@/hooks/use-session";
 import { Button } from "@/components/ui/button";
 import { BarChart3, RotateCcw } from "lucide-react";
@@ -11,7 +11,8 @@ import { BarChart3, RotateCcw } from "lucide-react";
 const Index = () => {
   const [analysis, setAnalysis] = useState<QuestionAnalysis | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const { addEntry, recordHintUsed, getSummary, currentIndex, entries, resetSession } = useSession();
+  const [isEvaluating, setIsEvaluating] = useState(false);
+  const { addEntry, recordHintUsed, recordEvaluation, getSummary, currentIndex, entries, resetSession } = useSession();
 
   const handleAnalyze = useCallback(
     async (question: string) => {
@@ -27,6 +28,20 @@ const Index = () => {
       setIsAnalyzing(false);
     },
     [addEntry]
+  );
+
+  const handleEvaluate = useCallback(
+    async (answer: string) => {
+      if (!analysis || currentIndex < 0) return;
+
+      setIsEvaluating(true);
+      await delay(1000 + Math.random() * 500);
+
+      const evaluation = evaluateAnswer(answer, analysis);
+      recordEvaluation(currentIndex, answer, evaluation);
+      setIsEvaluating(false);
+    },
+    [analysis, currentIndex, recordEvaluation]
   );
 
   const handleHintUsed = useCallback(
@@ -92,6 +107,9 @@ const Index = () => {
             analysis={analysis}
             isAnalyzing={isAnalyzing}
             onHintUsed={handleHintUsed}
+            onEvaluate={handleEvaluate}
+            isEvaluating={isEvaluating}
+            currentEvaluation={currentIndex >= 0 ? entries[currentIndex]?.evaluation : undefined}
           />
         </div>
       </main>

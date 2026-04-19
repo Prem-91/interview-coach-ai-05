@@ -1,6 +1,13 @@
 export type Topic = "DSA" | "OS" | "DBMS" | "OOP" | "System Design" | "Unknown";
 export type HintLevel = 1 | 2 | 3 | "final";
 
+export interface AnswerEvaluation {
+  score: number; // 0-100
+  strengths: string[];
+  improvements: string[];
+  feedback: string;
+}
+
 export interface QuestionAnalysis {
   topic: Topic;
   subtopic: string;
@@ -19,6 +26,8 @@ export interface SessionEntry {
   analysis: QuestionAnalysis;
   hintsUsed: HintLevel[];
   timestamp: Date;
+  userAnswer?: string;
+  evaluation?: AnswerEvaluation;
 }
 
 const topicKeywords: Record<Topic, string[]> = {
@@ -303,6 +312,46 @@ export function analyzeQuestion(question: string): QuestionAnalysis {
     confidence,
     hints,
     ...response,
+  };
+}
+
+export function evaluateAnswer(answer: string, analysis: QuestionAnalysis): AnswerEvaluation {
+  const lowerAnswer = answer.toLowerCase();
+  const matchedConcepts = analysis.keyConcepts.filter(concept =>
+    lowerAnswer.includes(concept.toLowerCase().split(' ')[0])
+  );
+
+  const coverage = matchedConcepts.length / analysis.keyConcepts.length;
+  const wordCount = answer.trim().split(/\s+/).length;
+
+  let score = Math.min(95, (coverage * 60) + (Math.min(wordCount, 100) / 100 * 35));
+
+  if (wordCount < 10) score = Math.min(score, 30);
+
+  const strengths = matchedConcepts.length > 0
+    ? [`Good use of key concepts like ${matchedConcepts.slice(0, 2).join(', ')}.`]
+    : ["The answer is structured but needs more technical depth."];
+
+  if (wordCount > 50) strengths.push("Comprehensive explanation with good detail.");
+
+  const improvements = [];
+  const missingConcepts = analysis.keyConcepts.filter(c => !matchedConcepts.includes(c));
+
+  if (missingConcepts.length > 0) {
+    improvements.push(`Consider incorporating ${missingConcepts[0]} to strengthen your response.`);
+  }
+
+  if (wordCount < 30) {
+    improvements.push("Try to elaborate more on the 'why' and 'how' to provide a more complete answer.");
+  }
+
+  return {
+    score: Math.round(score),
+    strengths,
+    improvements,
+    feedback: score > 70
+      ? "Great job! Your answer shows a solid understanding of the core concepts."
+      : "A good start. Focus on incorporating more technical terminology and detailing the trade-offs.",
   };
 }
 

@@ -1,10 +1,11 @@
-import { useState } from "react";
-import { QuestionAnalysis, HintLevel, Topic } from "@/lib/mock-reasoning";
+import { useState, useEffect } from "react";
+import { QuestionAnalysis, HintLevel, Topic, AnswerEvaluation } from "@/lib/mock-reasoning";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Lightbulb,
   AlertTriangle,
@@ -16,12 +17,18 @@ import {
   Zap,
   Target,
   Brain,
+  MessageSquare,
+  Award,
+  CheckCircle2,
 } from "lucide-react";
 
 interface AnalysisOutputProps {
   analysis: QuestionAnalysis | null;
   isAnalyzing: boolean;
   onHintUsed?: (level: HintLevel) => void;
+  onEvaluate?: (answer: string) => void;
+  isEvaluating?: boolean;
+  currentEvaluation?: AnswerEvaluation;
 }
 
 const topicColorMap: Record<Topic, string> = {
@@ -75,8 +82,22 @@ function EmptyState() {
   );
 }
 
-export function AnalysisOutput({ analysis, isAnalyzing, onHintUsed }: AnalysisOutputProps) {
+export function AnalysisOutput({
+  analysis,
+  isAnalyzing,
+  onHintUsed,
+  onEvaluate,
+  isEvaluating,
+  currentEvaluation,
+}: AnalysisOutputProps) {
   const [visibleHints, setVisibleHints] = useState<Set<HintLevel>>(new Set());
+  const [userAnswer, setUserAnswer] = useState("");
+
+  useEffect(() => {
+    if (analysis) {
+      setUserAnswer("");
+    }
+  }, [analysis]);
 
   const revealHint = (level: HintLevel) => {
     setVisibleHints((prev) => new Set([...prev, level]));
@@ -258,6 +279,97 @@ export function AnalysisOutput({ analysis, isAnalyzing, onHintUsed }: AnalysisOu
                   </div>
                 );
               })}
+          </section>
+
+          <Separator className="bg-border" />
+
+          {/* Answer Practice Section */}
+          <section className="space-y-4 pb-4">
+            <div className="flex items-center justify-between">
+              <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <MessageSquare className="h-4 w-4 text-primary" />
+                Draft Your Answer
+              </h4>
+              {currentEvaluation && (
+                <Badge className="bg-primary/20 text-primary border-primary/30">
+                  <Award className="mr-1 h-3 w-3" />
+                  Score: {currentEvaluation.score}/100
+                </Badge>
+              )}
+            </div>
+
+            <div className="space-y-3">
+              <Textarea
+                placeholder="Structure your thoughts here using the approach above..."
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                className="min-h-[150px] border-border bg-secondary/20 font-sans text-sm"
+              />
+              <Button
+                onClick={() => onEvaluate?.(userAnswer)}
+                disabled={!userAnswer.trim() || isEvaluating}
+                className="w-full gap-2"
+                variant="secondary"
+              >
+                {isEvaluating ? (
+                  <>
+                    <Zap className="h-4 w-4 animate-pulse" />
+                    Evaluating Performance...
+                  </>
+                ) : (
+                  <>
+                    <Target className="h-4 w-4" />
+                    {currentEvaluation ? "Re-evaluate Answer" : "Submit for Evaluation"}
+                  </>
+                )}
+              </Button>
+            </div>
+
+            {/* Evaluation Feedback */}
+            {currentEvaluation && (
+              <div className="animate-in fade-in slide-in-from-top-2 duration-500">
+                <Card className="border-primary/20 bg-primary/5">
+                  <CardContent className="space-y-4 pt-4">
+                    <div className="flex items-start gap-3">
+                      <div className="mt-1 rounded-full bg-primary/20 p-1">
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-semibold text-foreground">Feedback</p>
+                        <p className="text-sm text-secondary-foreground leading-relaxed">
+                          {currentEvaluation.feedback}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Strengths</p>
+                        <ul className="space-y-1">
+                          {currentEvaluation.strengths.map((s, i) => (
+                            <li key={i} className="text-xs text-secondary-foreground flex items-start gap-1.5">
+                              <span className="mt-1 h-1 w-1 rounded-full bg-primary flex-shrink-0" />
+                              {s}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-hint-3">Improvements</p>
+                        <ul className="space-y-1">
+                          {currentEvaluation.improvements.map((im, i) => (
+                            <li key={i} className="text-xs text-secondary-foreground flex items-start gap-1.5">
+                              <span className="mt-1 h-1 w-1 rounded-full bg-hint-3 flex-shrink-0" />
+                              {im}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </section>
         </CardContent>
       </ScrollArea>
