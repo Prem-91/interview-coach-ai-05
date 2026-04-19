@@ -1,5 +1,11 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "interview-coach-ai",
+  "description": "AI-powered interview coach to help users prepare for job interviews",
+  "homepage": "https://interview-ai-iota-nine.vercel.app/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Prem-91/interview-coach-ai-05"
+  },
   "private": true,
   "version": "0.0.0",
   "type": "module",
